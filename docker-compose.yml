@@ -1,0 +1,31 @@
+version: "2.4"
+
+services:
+
+  common:
+    image: common
+    build:
+      context: common/
+
+  kafka:
+    hostname: kafka
+    build: broker/
+    healthcheck:
+      test: ["CMD", "wait-for-it", "--timeout=2", "--host=localhost", "--port=9092"]
+      timeout: 2s
+      retries: 12
+      interval: 5s
+      start_period: 10s
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+
+  zookeeper:
+    hostname: zookeeper
+    build: zookeeper/
+    healthcheck:
+      test: ["CMD", "wait-for-it", "--timeout=2", "--host=localhost", "--port=2181"]
+      timeout: 2s
+      retries: 12
+      interval: 5s
+      start_period: 10s
