@@ -7,6 +7,16 @@ services:
     build:
       context: common/
 
+  zookeeper:
+    hostname: zookeeper
+    build: zookeeper/
+    healthcheck:
+      test: ["CMD", "wait-for-it", "--timeout=2", "--host=localhost", "--port=2181"]
+      timeout: 2s
+      retries: 12
+      interval: 5s
+      start_period: 10s
+
   kafka:
     hostname: kafka
     build: broker/
@@ -20,12 +30,37 @@ services:
       zookeeper:
         condition: service_healthy
 
-  zookeeper:
-    hostname: zookeeper
-    build: zookeeper/
+  primer:
+    hostname: primer
+    build: primer/
+    depends_on:
+      kafka:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "wait-for-it", "--timeout=2", "--host=localhost", "--port=2181"]
+      test: ["CMD", "wait-for-it", "--timeout=2", "--host=localhost", "--port=1234"]
       timeout: 2s
       retries: 12
       interval: 5s
       start_period: 10s
+
+  burrow:
+    hostname: burrow
+    build: Burrow/
+    ports:
+      - 8000:8000
+    depends_on:
+      primer:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:8000/v3/kafka/local/consumer/test-consumer"]
+      timeout: 2s
+      retries: 6
+      interval: 5s
+      start_period: 10s
+
+  test:
+    hostname: test
+    build: test/
+    depends_on:
+      burrow:
+        condition: service_healthy

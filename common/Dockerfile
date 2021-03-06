@@ -21,7 +21,9 @@ FROM ubuntu:latest
 RUN apt-get update && apt-get -y dist-upgrade
 RUN apt-get -y --no-install-recommends install \
     openjdk-11-jre-headless \
+    curl \
     wait-for-it \
+    jq \
     ncat && \
     apt-get clean all
 
