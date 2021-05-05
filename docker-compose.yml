@@ -20,6 +20,8 @@ services:
   kafka:
     hostname: kafka
     build: broker/
+    ports:
+      - 9092:9092
     healthcheck:
       test: ["CMD", "wait-for-it", "--timeout=2", "--host=localhost", "--port=9092"]
       timeout: 2s
